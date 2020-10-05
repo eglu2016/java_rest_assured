@@ -1,5 +1,4 @@
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
+import com.google.gson.*;
 import com.jayway.restassured.response.ValidatableResponse;
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.Matchers.*;
@@ -35,6 +34,33 @@ public class SimpleTest {
     }
 
     @Test
+    public void testSipleJson() {
+        String jsonString =
+                "{\"name\":\"Mahesh Kumar\", \"age\":21,\"verified\":false,\"marks\": [100,90,85]}";
+        JsonParser parser = new JsonParser();
+        JsonElement rootNode = parser.parse(jsonString);
+
+        if (rootNode.isJsonObject()) {
+            JsonObject details = rootNode.getAsJsonObject();
+
+            JsonElement nameNode = details.get("name");
+            System.out.println("Name: " +nameNode.getAsString());
+
+            JsonElement ageNode = details.get("age");
+            System.out.println("Age: " + ageNode.getAsInt());
+
+            JsonElement verifiedNode = details.get("verified");
+            System.out.println("Verified: " + (verifiedNode.getAsBoolean() ? "Yes":"No"));
+
+            JsonArray marks = details.getAsJsonArray("marks");
+            for (int i = 0; i < marks.size(); i++) {
+                JsonPrimitive value = marks.get(i).getAsJsonPrimitive();
+                System.out.print(value.getAsInt() + " ");
+            }
+        }
+    }
+
+    @Test
     public void testSearchRequest() throws Exception {
         ValidatableResponse responce = given()
                 .param("part", "Моск")
@@ -46,6 +72,7 @@ public class SimpleTest {
         System.out.println(responce.extract().body().asString());
         String pid = responce.extract().path("pid");
         System.out.println(pid);
+        System.out.println("--------------------------------------------------------");
         List<Object> data_list = responce.extract().path("data.list");
         // System.out.println(data_list);
         for (int i=0; i < data_list.size(); i++)
@@ -53,9 +80,21 @@ public class SimpleTest {
             // System.out.println(data_list.get(i));
         }
         System.out.println(data_list.get(0));
+        System.out.println("--------------------------------------------------------");
+        JsonParser parser = new JsonParser();
+        JsonElement rootNode = parser.parse(responce.extract().body().asString());
+
+        if (rootNode.isJsonObject()) {
+            JsonObject details = rootNode.getAsJsonObject();
+            JsonElement data_element = details.get("data");
+            System.out.println(data_element);
+
+            // JsonElement nameNode = details.get("success");
+            // System.out.println("success: " +nameNode.getAsString());
+        }
     }
 
-    public static void getResponseStatusCode(){
+    public static void getResponseStatusCode() {
         given()
                 .param("part", "Моск")
                 .get("http://api4pre.aviakassa.ru/v4/avia/airports")
